@@ -1,0 +1,821 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Deutsch am Abend</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: one calm column, three tabs (Heute · Fortschritt · Wörter); der/die/das colours carry noun gender everywhere */
+:root{
+  --bg:#F2F3EF; --surface:#FFFFFF; --sunk:#E8EAE4; --ink:#191C20; --muted:#59616A; --line:#D6D9D2;
+  --mark:#F1C232; --mark-ink:#191C20; --btn:#191C20; --btn-ink:#FFFFFF;
+  --der:#2B5AA6; --die:#BC3832; --das:#287A4C;
+  --ok:#2E7432; --ok-bg:#E3EFE0; --bad:#B3302A; --bad-bg:#F6E2E0;
+  --bar:#3E5F8A; --bar-soft:#C9D3E0;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121518; --surface:#1A1E22; --sunk:#23282D; --ink:#E7E9E4; --muted:#9CA5AE; --line:#2F353B;
+  --mark:#E3B53C; --mark-ink:#121518; --btn:#E7E9E4; --btn-ink:#121518;
+  --der:#89ABEB; --die:#F0827A; --das:#66C38F;
+  --ok:#86C77C; --ok-bg:#1E2B1F; --bad:#F0827A; --bad-bg:#33201F;
+  --bar:#8FAEDB; --bar-soft:#2C3846; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#121518; --surface:#1A1E22; --sunk:#23282D; --ink:#E7E9E4; --muted:#9CA5AE; --line:#2F353B;
+  --mark:#E3B53C; --mark-ink:#121518; --btn:#E7E9E4; --btn-ink:#121518;
+  --der:#89ABEB; --die:#F0827A; --das:#66C38F;
+  --ok:#86C77C; --ok-bg:#1E2B1F; --bad:#F0827A; --bad-bg:#33201F;
+  --bar:#8FAEDB; --bar-soft:#2C3846; color-scheme:dark }
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app{max-width:960px;margin:0 auto;padding-block:20px 72px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.1;margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.brand h1{font-size:34px;letter-spacing:.01em}
+.brand h1 span{background:var(--mark);color:var(--mark-ink);padding:0 6px;border-radius:3px}
+.brand p{color:var(--muted);margin-top:4px}
+.streak{display:flex;gap:18px}
+.streak div{display:flex;flex-direction:column;align-items:flex-end}
+.streak b{font-family:var(--display);font-size:28px;font-weight:700;line-height:1}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{background:none;border:0;padding:10px 14px;font-family:var(--display);font-size:19px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--mark)}
+
+/* generic */
+.stack{display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}
+.btn{background:var(--btn);color:var(--btn-ink);border:0;border-radius:6px;padding:10px 16px;font-weight:600}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.notice{padding:14px 16px;border-radius:8px;background:var(--sunk)}
+.err{color:var(--bad)}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 11px}
+textarea{width:100%;min-height:76px;resize:vertical;box-sizing:border-box}
+
+/* lesson head */
+.lesson-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.lesson-head h2{font-size:28px}
+.dayselect{display:flex;gap:8px;align-items:center}
+
+/* word cards */
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.word{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.word .w{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
+.art{font-weight:700}
+.art.der{color:var(--der)} .art.die{color:var(--die)} .art.das{color:var(--das)}
+.word .forms{font-size:14px;color:var(--muted)}
+.word .ex{font-style:italic;border-top:1px dashed var(--line);padding-top:6px;margin-top:2px}
+.word .tr{font-size:13px;color:var(--muted)}
+
+/* grammar */
+.merke{display:inline-block;background:var(--mark);color:var(--mark-ink);font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:1px 8px;border-radius:3px}
+.grammar h3{font-size:24px;margin-top:8px}
+.grammar p{max-width:65ch;margin-top:8px}
+.grammar ul{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.grammar li{font-style:italic}
+
+/* exercises */
+.ex-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.meter{flex:1 1 160px;max-width:260px;height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--mark)}
+ol.exs{list-style:none;margin:0;padding:0}
+.exi{display:grid;grid-template-columns:34px 1fr;gap:4px 12px;padding:16px 0;border-top:1px solid var(--line)}
+.exi:first-child{border-top:0}
+.exn{font-family:var(--display);font-size:24px;font-weight:700;color:var(--muted);line-height:1.2}
+.exb{display:flex;flex-direction:column;gap:10px;min-width:0}
+.prompt{font-size:17px;overflow-wrap:anywhere}
+.blank{display:inline-block;min-width:3.5em;border-bottom:2px solid var(--ink);color:transparent}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.opt.is-right{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);font-weight:600}
+.opt.is-wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.answer{display:flex;gap:8px;flex-wrap:wrap}
+.answer input{flex:1 1 200px;min-width:0}
+.res{padding:8px 12px;border-radius:6px;font-size:15px}
+.res.ok{background:var(--ok-bg)} .res.bad{background:var(--bad-bg)}
+.res .mk{font-weight:700}
+.res.ok .mk{color:var(--ok)} .res.bad .mk{color:var(--bad)}
+.skill{font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+details summary{cursor:pointer;color:var(--muted);font-size:14px}
+.flagged{font-size:14px;color:var(--muted)}
+.done{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--surface);border:2px solid var(--mark);border-radius:8px;padding:16px 18px}
+.done b{font-family:var(--display);font-size:34px;line-height:1}
+
+/* progress */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kpi b{font-family:var(--display);font-size:36px;font-weight:700;line-height:1}
+.kpi small{color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.grid2{grid-template-columns:1fr}}
+.panel h3{font-size:21px}
+.panel .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.chart{margin-top:12px;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:320px}
+.chart text{fill:var(--muted);font-family:var(--body);font-size:11px}
+.bars{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.barrow{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;font-size:14px}
+.track{height:14px;background:var(--sunk);border-radius:0 4px 4px 0;position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;background:var(--bar-soft);border-radius:0 4px 4px 0}
+.track em{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:0 4px 4px 0}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.hard{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column}
+.hard li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.hard li:first-child{border-top:0}
+
+/* words table */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters input{flex:1 1 200px;min-width:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:15px}
+th,td{text-align:left;padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+thead th{border-top:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--sunk)}
+td.n{text-align:right}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.neu{background:var(--sunk);color:var(--muted)}
+.pill.uebt{background:var(--bad-bg);color:var(--bad)}
+.pill.gelernt{background:var(--ok-bg);color:var(--ok)}
+
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--btn);color:var(--btn-ink);font-size:13px;padding:6px 9px;border-radius:5px;max-width:240px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--btn);color:var(--btn-ink);padding:10px 14px;border-radius:6px;font-size:14px;z-index:30;max-width:min(90vw,480px)}
+@media (prefers-reduced-motion:no-preference){.meter i{transition:width .3s ease}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Deutsch <span>am Abend</span></h1>
+      <p id="subline">A2 → B1 · Wörter, Grammatik und Übungen in 5–10 Minuten</p>
+    </div>
+    <div class="streak" id="streak"></div>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-heute" aria-selected="true" data-tab="heute">Heute</button>
+    <button class="tab" role="tab" id="tab-fortschritt" aria-selected="false" data-tab="fortschritt">Fortschritt</button>
+    <button class="tab" role="tab" id="tab-woerter" aria-selected="false" data-tab="woerter">Wörter</button>
+  </nav>
+  <main>
+    <section id="view-heute" class="stack"><div class="notice">Lade deine Lektionen …</div></section>
+    <section id="view-fortschritt" class="stack" hidden></section>
+    <section id="view-woerter" class="stack" hidden></section>
+  </main>
+</div>
+<div id="tip" class="tip" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const LEVEL = "A2 → B1";
+const SECTORS = ["Alltag", "IT & Technik", "Business & Büro"];
+const TOPICS = [
+  "Perfekt mit haben und sein",
+  "Präteritum von sein, haben und Modalverben",
+  "Modalverben im Präsens (können, müssen, dürfen, sollen, wollen, möchten)",
+  "Trennbare und untrennbare Verben",
+  "Reflexive Verben",
+  "Dativ: Artikel und Personalpronomen",
+  "Akkusativ und Dativ im Satz",
+  "Präpositionen mit Dativ (mit, bei, nach, von, zu, aus, seit)",
+  "Präpositionen mit Akkusativ (für, ohne, gegen, durch, um)",
+  "Wechselpräpositionen: wo? (Dativ) und wohin? (Akkusativ)",
+  "Nebensätze mit weil",
+  "Nebensätze mit dass",
+  "Nebensätze mit wenn",
+  "Indirekte Fragen mit ob und W-Wörtern",
+  "Komparativ und Superlativ",
+  "Possessivartikel im Akkusativ und Dativ",
+  "Adjektivdeklination nach bestimmtem Artikel",
+  "Adjektivdeklination nach unbestimmtem Artikel",
+  "Imperativ (du, ihr, Sie)",
+  "Konjunktiv II: höfliche Bitten (würde, könnte, hätte)",
+  "Futur I mit werden",
+  "Konnektoren: deshalb, trotzdem, dann",
+  "Verben mit Präpositionen (warten auf, denken an)",
+  "Temporale Präpositionen (am, um, im, vor, nach, seit)",
+  "Relativsätze im Nominativ und Akkusativ",
+  "Infinitiv mit zu",
+  "Passiv im Präsens",
+  "n-Deklination"
+];
+const TYPE_LABEL = { verb: "Verb", noun: "Nomen", adj: "Adjektiv" };
+const TYPE_PLURAL = { verb: "Verben", noun: "Nomen", adj: "Adjektive" };
+const SKILL_LABEL = { wort: "Wortschatz", wiederholung: "Wiederholung", grammatik: "Grammatik", schreiben: "Schreiben" };
+
+const state = {
+  db: null, sample: null, downloads: null,
+  dbStatus: "loading", // loading | ok | none
+  readOnly: false,
+  lessons: [], progress: {}, words: {}, plan: null,
+  ready: { lessons: false, progress: false, words: false },
+  tab: "heute", selDate: null,
+  drafts: {}, pending: {}, reveal: {}, gen: null,
+  filter: { q: "", type: "", sector: "" }
+};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+function esc(v){ return String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function berlinDate(d = new Date()){ return d.toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }); }
+const TODAY = berlinDate();
+function dateObj(iso){ const [y,m,d] = iso.split("-").map(Number); return new Date(Date.UTC(y, m-1, d, 12)); }
+function deDate(iso, opts){ return dateObj(iso).toLocaleDateString("de-DE", Object.assign({ timeZone: "UTC" }, opts)); }
+function shortDate(iso){ return deDate(iso, { day: "2-digit", month: "2-digit" }); }
+function addDays(iso, n){ const d = dateObj(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
+function keyOf(de){
+  return String(de || "").toLowerCase().replace(/^(der|die|das)\s+/, "")
+    .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80) || "wort";
+}
+function norm(s){ return String(s ?? "").toLowerCase().replace(/[„“"'.!?,;:()¿¡]/g, "").replace(/\s+/g, " ").trim(); }
+function str(v){ return v == null ? "" : String(v).slice(0, 600); }
+function strn(v){ return v == null || v === "" ? null : String(v).slice(0, 600); }
+function clone(o){ return o ? JSON.parse(JSON.stringify(o)) : o; }
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 4500); }
+function lessonBy(date){ return state.lessons.find(l => l.date === date); }
+function allReady(){ return state.ready.lessons && state.ready.progress && state.ready.words; }
+function artHtml(w){ return w && w.article ? `<span class="art ${esc(w.article)}">${esc(w.article)}</span> ` : ""; }
+
+/* ---------- stats ---------- */
+function computeStats(){
+  const perWord = {}; const days = [];
+  const dates = Object.keys(state.progress).sort();
+  for (const date of dates){
+    const p = state.progress[date]; let r = 0, w = 0;
+    for (const a of Object.values(p.answers || {})){
+      if (!a || a.flagged || a.correct == null) continue;
+      a.correct ? r++ : w++;
+      if (a.wordKey){
+        const s = perWord[a.wordKey] || (perWord[a.wordKey] = { right: 0, wrong: 0, last: null, lastDate: "" });
+        a.correct ? s.right++ : s.wrong++;
+        if (date >= s.lastDate){ s.last = !!a.correct; s.lastDate = date; }
+      }
+    }
+    if (r + w > 0) days.push({ date, r, w, rate: w / (r + w), done: !!p.done });
+  }
+  const status = k => { const s = perWord[k]; if (!s) return "neu"; return s.last && s.right > s.wrong ? "gelernt" : "uebt"; };
+  // streak: consecutive finished days ending today (or yesterday if today is still open)
+  let streak = 0; let d = TODAY;
+  if (!(state.progress[d] && state.progress[d].done)) d = addDays(d, -1);
+  while (state.progress[d] && state.progress[d].done){ streak++; d = addDays(d, -1); }
+  const since = addDays(TODAY, -6); let r7 = 0, w7 = 0;
+  days.filter(x => x.date >= since).forEach(x => { r7 += x.r; w7 += x.w; });
+  return { perWord, days, status, streak, rate7: r7 + w7 ? w7 / (r7 + w7) : null };
+}
+
+/* ---------- render ---------- */
+let rafId = 0;
+function render(){ cancelAnimationFrame(rafId); rafId = requestAnimationFrame(renderNow); }
+function renderNow(){
+  const a = document.activeElement; const fid = a && a.id; let s0, s1;
+  try { s0 = a.selectionStart; s1 = a.selectionEnd; } catch(e) {}
+  renderHeader();
+  if (state.tab === "heute") renderHeute();
+  if (state.tab === "fortschritt") renderFortschritt();
+  if (state.tab === "woerter") renderWoerter();
+  if (fid){ const n = document.getElementById(fid); if (n && n !== document.activeElement){ n.focus(); try { n.setSelectionRange(s0, s1); } catch(e) {} } }
+}
+function renderHeader(){
+  $("#subline").textContent = LEVEL + " · " + deDate(TODAY, { weekday: "long", day: "numeric", month: "long" });
+  if (state.dbStatus !== "ok" || !allReady()){ $("#streak").innerHTML = ""; return; }
+  const st = computeStats();
+  $("#streak").innerHTML = `<div><span class="label">Serie</span><b class="num">${st.streak}</b><span class="muted" style="font-size:13px">${st.streak === 1 ? "Tag" : "Tage"}</span></div>
+    <div><span class="label">Wörter</span><b class="num">${Object.keys(state.words).length}</b><span class="muted" style="font-size:13px">gesamt</span></div>`;
+}
+function noDbHtml(){
+  return `<div class="notice"><b>Diese Seite braucht Claude.</b><p style="margin-top:6px">Lektionen und Fortschritt werden in Claude gespeichert. Öffne die Seite in Claude (claude.ai oder in der App), um sie zu nutzen.</p></div>`;
+}
+
+/* Heute */
+function renderHeute(){
+  const el = $("#view-heute");
+  if (state.dbStatus === "none"){ el.innerHTML = noDbHtml(); return; }
+  if (state.dbStatus === "loading" || !allReady()){ el.innerHTML = `<div class="notice">Lade deine Lektionen …</div>`; return; }
+  const sel = state.selDate || TODAY;
+  const L = lessonBy(sel);
+  let html = dayPickerHtml(sel);
+  html += L ? lessonHtml(L, state.progress[sel]) : emptyHtml(sel);
+  el.innerHTML = html;
+}
+function dayPickerHtml(sel){
+  const dates = state.lessons.map(l => l.date);
+  if (!dates.includes(TODAY)) dates.unshift(TODAY);
+  const opts = dates.slice(0, 60).map(d => {
+    const p = state.progress[d]; const has = !!lessonBy(d);
+    let tag = !has ? " · noch offen" : p && p.done ? " · erledigt" : p ? " · begonnen" : "";
+    const name = d === TODAY ? "Heute" : deDate(d, { weekday: "short", day: "2-digit", month: "2-digit" });
+    return `<option value="${d}" ${d === sel ? "selected" : ""}>${esc(name + tag)}</option>`;
+  }).join("");
+  return `<div class="dayselect"><label class="label" for="daysel">Lektion</label><select id="daysel">${opts}</select></div>`;
+}
+function emptyHtml(sel){
+  const open = state.lessons.filter(l => l.date !== TODAY && !(state.progress[l.date] && state.progress[l.date].done)).slice(0, 5);
+  let gen = "";
+  if (state.readOnly) gen = `<p class="muted">Du kannst diese Seite nur ansehen.</p>`;
+  else if (state.gen && state.gen.msg) gen = `<p><b>${esc(state.gen.msg)}</b></p>`;
+  else if (state.sample) gen = `<div class="row"><button class="btn" data-action="generate">Lektion jetzt erstellen</button>${state.gen && state.gen.err ? `<span class="err">${esc(state.gen.err)}</span>` : ""}</div>`;
+  else gen = `<p class="muted">Claude ist in dieser Ansicht nicht verfügbar. Die Lektion kommt am Abend automatisch.</p>`;
+  return `<div class="panel stack">
+    <div><h2 style="font-size:26px">Für heute gibt es noch keine Lektion</h2>
+    <p class="muted" style="margin-top:6px">Sie wird jeden Abend gegen 18:45 automatisch vorbereitet. Du kannst sie auch sofort erstellen.</p></div>
+    ${gen}
+    ${open.length ? `<div><span class="label">Noch nicht fertig</span><div class="row" style="margin-top:6px">${open.map(l => `<button class="btn ghost" data-action="goto" data-date="${l.date}">${esc(deDate(l.date, { weekday: "short", day: "2-digit", month: "2-digit" }))}</button>`).join("")}</div></div>` : ""}
+  </div>`;
+}
+function lessonHtml(L, P){
+  const words = Array.isArray(L.words) ? L.words : [];
+  const g = L.grammar || {};
+  const exs = Array.isArray(L.exercises) ? L.exercises : [];
+  const answers = (P && P.answers) || {};
+  const doneCount = exs.filter(e => answers[e.id] && (answers[e.id].correct != null || answers[e.id].flagged)).length;
+  const pct = exs.length ? Math.round(doneCount / exs.length * 100) : 0;
+  const wordCards = words.map(w => `<article class="word">
+      <div class="row" style="justify-content:space-between"><span class="label">${esc(TYPE_LABEL[w.type] || w.type)}</span></div>
+      <div class="w">${artHtml(w)}${esc(w.de)}</div>
+      ${w.plural || w.forms ? `<div class="forms">${esc([w.plural ? "Plural: " + w.plural : "", w.forms || ""].filter(Boolean).join(" · "))}</div>` : ""}
+      <p>${esc(w.meaning)}</p>
+      ${w.es ? `<p class="tr">es. ${esc(w.es)}</p>` : ""}
+      ${w.example ? `<p class="ex">${esc(w.example)}</p>` : ""}
+    </article>`).join("");
+  const exItems = exs.map((e, i) => exerciseHtml(L, e, i, answers[e.id])).join("");
+  let doneHtml = "";
+  if (P && P.done){
+    const r = (P.score && P.score.right) || 0, w = (P.score && P.score.wrong) || 0;
+    doneHtml = `<div class="done"><b class="num">${r}/${r + w}</b><div><b style="font-family:var(--body);font-size:16px">Lektion erledigt. Gut gemacht!</b><p class="muted">${w ? `${w} Fehler: diese Wörter kommen in den nächsten Tagen zur Wiederholung.` : "Alles richtig."}</p></div></div>`;
+  }
+  return `
+    <div class="lesson-head">
+      <div><span class="label">${esc(deDate(L.date, { weekday: "long", day: "numeric", month: "long" }))}</span>
+      <h2>${esc(L.theme || "Lektion")}</h2></div>
+      <span class="chip">${esc(L.sector || "")}</span>
+    </div>
+    ${doneHtml}
+    <section class="stack" aria-label="Neue Wörter"><h3 style="font-size:22px">Neue Wörter</h3><div class="words">${wordCards}</div></section>
+    <section class="panel grammar"><span class="merke">Merke</span><h3>${esc(g.title || g.topic || "")}</h3>
+      ${String(g.explanation || "").split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join("")}
+      ${Array.isArray(g.examples) && g.examples.length ? `<ul>${g.examples.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    </section>
+    <section class="panel">
+      <div class="ex-head"><h3>Übungen</h3><div class="row"><span class="muted num">${doneCount} von ${exs.length}</span><div class="meter" aria-hidden="true"><i style="width:${pct}%"></i></div></div></div>
+      <ol class="exs">${exItems}</ol>
+    </section>`;
+}
+function promptHtml(text){ return esc(text).replace(/_{2,}/g, '<span class="blank">___</span>'); }
+function exerciseHtml(L, e, i, a){
+  const id = `in-${L.date}-${e.id}`;
+  const answered = a && a.correct != null;
+  const ro = state.readOnly;
+  let body = "";
+  if (e.kind === "choice"){
+    const opts = Array.isArray(e.options) ? e.options : [];
+    body = `<div class="opts">${opts.map((o, k) => {
+      let cls = "opt";
+      if (answered){ if (norm(o) === norm(e.answer)) cls += " is-right"; else if (norm(o) === norm(a.given)) cls += " is-wrong"; }
+      return `<button class="${cls}" id="${id}-o${k}" data-action="choose" data-date="${L.date}" data-ex="${esc(e.id)}" data-i="${k}" ${answered || ro || (a && a.flagged) ? "disabled" : ""}>${esc(o)}</button>`;
+    }).join("")}</div>`;
+  } else if (e.kind === "gap"){
+    const v = answered ? a.given : (state.drafts[id] || "");
+    body = `<form class="answer" data-action="check" data-date="${L.date}" data-ex="${esc(e.id)}">
+      <input id="${id}" data-draft="${id}" value="${esc(v)}" ${answered || ro || (a && a.flagged) ? "disabled" : ""} autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Antwort ${i + 1}">
+      ${answered ? "" : `<button class="btn" type="submit" ${ro || (a && a.flagged) ? "disabled" : ""}>Prüfen</button>`}</form>`;
+  } else {
+    const v = answered ? a.given : (state.drafts[id] || "");
+    const busy = state.pending[e.id];
+    let ctl = "";
+    if (!answered && !(a && a.flagged)){
+      if (busy) ctl = `<span class="muted">Claude prüft deinen Satz …</span>`;
+      else if (state.reveal[L.date + e.id]) ctl = `<div class="stack" style="gap:8px"><p class="res ok" style="background:var(--sunk)"><span class="skill">Beispiellösung</span><br>${esc(e.model || "")}</p>
+          <div class="row"><span class="muted">War dein Satz richtig?</span><button class="btn ghost" data-action="self" data-ok="1" data-date="${L.date}" data-ex="${esc(e.id)}">Ja</button><button class="btn ghost" data-action="self" data-ok="0" data-date="${L.date}" data-ex="${esc(e.id)}">Nein</button></div></div>`;
+      else ctl = `<div class="row">${state.sample ? `<button class="btn" data-action="grade" data-date="${L.date}" data-ex="${esc(e.id)}" ${ro ? "disabled" : ""}>Von Claude prüfen lassen</button>` : ""}<button class="link" data-action="reveal" data-date="${L.date}" data-ex="${esc(e.id)}">Beispiellösung zeigen</button></div>`;
+    }
+    body = `<textarea id="${id}" data-draft="${id}" ${answered || ro || (a && a.flagged) ? "disabled" : ""} aria-label="Antwort ${i + 1}" placeholder="Schreib hier …">${esc(v)}</textarea>${ctl}`;
+  }
+  let res = "";
+  if (answered){
+    const ok = !!a.correct;
+    const extra = [];
+    if (!ok && e.kind !== "write" && e.answer) extra.push(`Richtig ist: <b>${esc(e.answer)}</b>`);
+    if (a.corrected && norm(a.corrected) !== norm(a.given)) extra.push(`Korrektur: <b>${esc(a.corrected)}</b>`);
+    if (a.feedback) extra.push(esc(a.feedback));
+    if (e.kind === "write" && e.model) extra.push(`<span class="muted">Beispiel: ${esc(e.model)}</span>`);
+    res = `<p class="res ${ok ? "ok" : "bad"}"><span class="mk">${ok ? "✓ Richtig" : "✗ Nicht ganz"}</span>${extra.length ? " · " + extra.join("<br>") : ""}</p>`;
+  }
+  const hint = e.hint && !answered ? `<details><summary>Tipp</summary><p class="muted" style="margin-top:4px">${esc(e.hint)}</p></details>` : "";
+  const flag = ro ? "" : a && a.flagged
+    ? `<p class="flagged">Als fehlerhaft gemeldet, zählt nicht in der Statistik. <button class="link" data-action="flag" data-date="${L.date}" data-ex="${esc(e.id)}">Rückgängig</button></p>`
+    : `<div><button class="link" data-action="flag" data-date="${L.date}" data-ex="${esc(e.id)}">Aufgabe fehlerhaft?</button></div>`;
+  return `<li class="exi"><span class="exn num">${i + 1}</span><div class="exb">
+    <span class="skill">${esc(SKILL_LABEL[e.skill] || "Übung")}</span>
+    <p class="prompt">${promptHtml(e.prompt)}</p>${body}${hint}${res}${flag}</div></li>`;
+}
+
+/* Fortschritt */
+function renderFortschritt(){
+  const el = $("#view-fortschritt");
+  if (state.dbStatus === "none"){ el.innerHTML = noDbHtml(); return; }
+  if (state.dbStatus === "loading" || !allReady()){ el.innerHTML = `<div class="notice">Lade deine Daten …</div>`; return; }
+  const st = computeStats();
+  const words = Object.values(state.words);
+  const learned = words.filter(w => st.status(w.key) === "gelernt").length;
+  const lessonsDone = Object.values(state.progress).filter(p => p.done).length;
+  const kpi = (label, val, sub) => `<div class="kpi"><span class="label">${label}</span><b class="num">${val}</b><small>${sub}</small></div>`;
+  const by = (field, keys, labelFn) => keys.map(k => {
+    const list = words.filter(w => w[field] === k);
+    return { label: labelFn(k), total: list.length, learned: list.filter(w => st.status(w.key) === "gelernt").length };
+  });
+  const typeRows = by("type", ["verb","noun","adj"], k => TYPE_PLURAL[k]);
+  const sectorRows = by("sector", SECTORS, k => k);
+  const hard = Object.entries(st.perWord).filter(([k, s]) => s.wrong > 0 && state.words[k])
+    .sort((a, b) => (b[1].wrong - b[1].right) - (a[1].wrong - a[1].right) || b[1].wrong - a[1].wrong).slice(0, 8);
+  el.innerHTML = `
+    ${planHtml()}
+    <div class="kpis">
+      ${kpi("Wörter gesehen", words.length, "seit Beginn")}
+      ${kpi("Gelernt", learned, "zuletzt richtig beantwortet")}
+      ${kpi("Fehlerquote", st.rate7 == null ? "–" : Math.round(st.rate7 * 100) + " %", "letzte 7 Tage")}
+      ${kpi("Lektionen", lessonsDone, "abgeschlossen")}
+    </div>
+    <section class="panel"><h3>Fehlerquote pro Tag</h3><p class="sub">Anteil falscher Antworten je Lektion, letzte 30 Lektionen</p>
+      <div class="chart">${lineChart(st.days.slice(-30))}</div></section>
+    <div class="grid2">
+      <section class="panel"><h3>Nach Wortart</h3>${barsHtml(typeRows)}</section>
+      <section class="panel"><h3>Nach Bereich</h3>${barsHtml(sectorRows)}</section>
+    </div>
+    <section class="panel"><h3>Schwierige Wörter</h3><p class="sub">Diese Wörter kommen öfter in die Wiederholung</p>
+      ${hard.length ? `<ul class="hard">${hard.map(([k, s]) => { const w = state.words[k]; return `<li><span>${artHtml(w)}${esc(w.de)} <span class="muted">· ${esc(w.es || "")}</span></span><span class="num muted">${s.wrong}× falsch · ${s.right}× richtig</span></li>`; }).join("")}</ul>`
+      : `<p class="muted" style="margin-top:10px">Noch keine Fehler gespeichert.</p>`}
+    </section>`;
+}
+function planHtml(){
+  const p = state.plan;
+  if (!p) return `<section class="panel"><span class="merke">Wochenplan</span><p class="muted" style="margin-top:8px">Jeden Sonntagabend analysiert Claude deine Woche und passt die nächsten Lektionen an. Der erste Plan erscheint hier am Sonntag.</p></section>`;
+  const diff = { leichter: "etwas leichter", gleich: "gleich", schwerer: "etwas schwerer" }[p.difficulty] || p.difficulty || "";
+  const words = (p.reviewWords || []).map(k => state.words[k]).filter(Boolean);
+  return `<section class="panel stack" style="gap:10px">
+    <div class="row" style="justify-content:space-between"><span class="merke">Wochenplan</span><span class="muted" style="font-size:14px">ab ${esc(deDate(p.weekOf || TODAY, { day: "numeric", month: "long" }))}</span></div>
+    ${p.summary ? `<p style="max-width:65ch">${esc(p.summary)}</p>` : ""}
+    ${(p.weakAreas || []).length ? `<div><span class="label">Daran arbeiten wir</span><ul style="margin:6px 0 0;padding-left:20px">${p.weakAreas.map(a => `<li><b>${esc(a.area)}</b>${a.detail ? `: ${esc(a.detail)}` : ""}</li>`).join("")}</ul></div>` : ""}
+    ${(p.strengths || []).length ? `<div><span class="label">Das läuft gut</span><p style="margin-top:4px">${esc(p.strengths.join(" · "))}</p></div>` : ""}
+    <div class="row" style="gap:16px">
+      ${(p.focusTopics || []).length ? `<span><span class="label">Grammatik im Fokus</span><br>${esc(p.focusTopics.join(", "))}</span>` : ""}
+      ${diff ? `<span><span class="label">Schwierigkeit</span><br>${esc(diff)}</span>` : ""}
+    </div>
+    ${words.length ? `<div><span class="label">Extra-Wiederholung</span><div class="row" style="margin-top:6px;gap:6px">${words.map(w => `<span class="chip">${artHtml(w)}${esc(w.de)}</span>`).join("")}</div></div>` : ""}
+  </section>`;
+}
+function barsHtml(rows){
+  const max = Math.max(1, ...rows.map(r => r.total));
+  return `<div class="bars">${rows.map(r => `<div class="barrow" data-tip="${esc(`${r.label}: ${r.total} gesehen, ${r.learned} gelernt`)}" tabindex="0">
+      <span>${esc(r.label)}</span>
+      <div class="track"><i style="width:${r.total / max * 100}%"></i><em style="width:${r.learned / max * 100}%"></em></div>
+      <span class="num muted" style="text-align:right">${r.learned} / ${r.total}</span></div>`).join("")}</div>
+    <div class="legend"><span style="--c:var(--bar)">gelernt</span><span style="--c:var(--bar-soft)">gesehen</span></div>`;
+}
+function lineChart(days){
+  if (!days.length) return `<p class="muted">Die Kurve erscheint, sobald du die erste Lektion gemacht hast.</p>`;
+  const W = 640, H = 220, l = 44, r = 16, t = 14, b = 30;
+  const iw = W - l - r, ih = H - t - b;
+  const x = i => days.length === 1 ? l + iw / 2 : l + i / (days.length - 1) * iw;
+  const y = v => t + (1 - v) * ih;
+  let g = "";
+  [0, .25, .5, .75, 1].forEach(v => {
+    g += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
+    g += `<text x="${l - 8}" y="${y(v) + 4}" text-anchor="end">${Math.round(v * 100)} %</text>`;
+  });
+  const lab = new Set([0, days.length - 1, Math.floor((days.length - 1) / 2)]);
+  [...lab].forEach(i => { g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${shortDate(days[i].date)}</text>`; });
+  const pts = days.map((d, i) => `${x(i)},${y(d.rate)}`).join(" ");
+  const area = days.length > 1 ? `<polygon points="${x(0)},${y(0)} ${pts} ${x(days.length - 1)},${y(0)}" fill="var(--bar)" fill-opacity=".10"/>` : "";
+  const line = days.length > 1 ? `<polyline points="${pts}" fill="none" stroke="var(--bar)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : "";
+  const dots = days.map((d, i) => {
+    const last = i === days.length - 1;
+    return `<g tabindex="0" data-tip="${esc(`${deDate(d.date, { weekday: "short", day: "2-digit", month: "2-digit" })}: ${Math.round(d.rate * 100)} % Fehler (${d.w} von ${d.r + d.w})`)}">
+      <circle cx="${x(i)}" cy="${y(d.rate)}" r="12" fill="transparent"/>
+      <circle cx="${x(i)}" cy="${y(d.rate)}" r="${last ? 5.5 : 4}" fill="var(--bar)" stroke="var(--surface)" stroke-width="2"/></g>`;
+  }).join("");
+  const lastD = days[days.length - 1];
+  const endLabel = `<text x="${Math.min(x(days.length - 1), W - r - 4)}" y="${Math.max(y(lastD.rate) - 12, 12)}" text-anchor="end" style="fill:var(--ink);font-weight:600">${Math.round(lastD.rate * 100)} %</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fehlerquote pro Lektion">${g}${area}${line}${dots}${endLabel}</svg>`;
+}
+
+/* Wörter */
+function renderWoerter(){
+  const el = $("#view-woerter");
+  if (state.dbStatus === "none"){ el.innerHTML = noDbHtml(); return; }
+  if (state.dbStatus === "loading" || !allReady()){ el.innerHTML = `<div class="notice">Lade deine Wörter …</div>`; return; }
+  if (!el.dataset.built){
+    el.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div class="filters" style="flex:1 1 420px">
+          <input id="fq" type="search" placeholder="Wort oder Übersetzung suchen" aria-label="Suchen">
+          <select id="ft" aria-label="Wortart"><option value="">Alle Wortarten</option><option value="verb">Verben</option><option value="noun">Nomen</option><option value="adj">Adjektive</option></select>
+          <select id="fs" aria-label="Bereich"><option value="">Alle Bereiche</option>${SECTORS.map(s => `<option>${esc(s)}</option>`).join("")}</select>
+        </div>
+        <button class="btn ghost" id="exportBtn" data-action="export" ${state.downloads ? "" : "hidden"}>Als Excel exportieren</button>
+      </div>
+      <div id="wtable"></div>`;
+    el.dataset.built = "1";
+    $("#fq").value = state.filter.q; $("#ft").value = state.filter.type; $("#fs").value = state.filter.sector;
+  }
+  $("#exportBtn").hidden = !state.downloads;
+  renderTable();
+}
+function renderTable(){
+  const st = computeStats(); const f = state.filter; const q = norm(f.q);
+  const list = Object.values(state.words)
+    .filter(w => (!f.type || w.type === f.type) && (!f.sector || w.sector === f.sector) && (!q || norm(w.de).includes(q) || norm(w.es).includes(q) || norm(w.meaning).includes(q)))
+    .sort((a, b) => (b.firstDate || "").localeCompare(a.firstDate || "") || a.de.localeCompare(b.de, "de"));
+  const label = { neu: "Neu", uebt: "Übt noch", gelernt: "Gelernt" };
+  const host = $("#wtable");
+  if (!Object.keys(state.words).length){ host.innerHTML = `<div class="notice">Noch keine Wörter. Nach der ersten Lektion erscheinen sie hier.</div>`; return; }
+  host.innerHTML = `<div class="tablewrap"><table><thead><tr><th>Wort</th><th>Wortart</th><th>Bereich</th><th>Spanisch</th><th class="n">Richtig / Falsch</th><th>Status</th></tr></thead><tbody>
+    ${list.map(w => { const s = st.perWord[w.key]; const k = st.status(w.key);
+      return `<tr><td>${artHtml(w)}<b>${esc(w.de)}</b>${w.plural ? `<br><span class="muted" style="font-size:13px">${esc(w.plural)}</span>` : ""}</td>
+        <td>${esc(TYPE_LABEL[w.type] || "")}</td><td>${esc(w.sector || "")}</td><td>${esc(w.es || "")}</td>
+        <td class="n num">${s ? `${s.right} / ${s.wrong}` : "–"}</td><td><span class="pill ${k}">${label[k]}</span></td></tr>`; }).join("")}
+  </tbody></table></div><p class="muted" style="margin-top:8px;font-size:14px">${list.length} von ${Object.keys(state.words).length} Wörtern</p>`;
+}
+
+/* ---------- actions ---------- */
+let chain = Promise.resolve();
+function saveProgress(date){
+  const snap = clone(state.progress[date]);
+  chain = chain.then(() => state.db.doc("progress/" + date).set(snap)).catch(e => {
+    if (e && e.code === "invalid_argument"){ state.readOnly = true; render(); }
+    toast("Speichern hat nicht geklappt. Bitte versuch es gleich noch einmal.");
+  });
+  return chain;
+}
+function finalize(P, L){
+  let right = 0, wrong = 0, closed = 0;
+  for (const e of L.exercises || []){
+    const a = P.answers[e.id];
+    if (!a) continue;
+    if (a.flagged){ closed++; continue; }
+    if (a.correct == null) continue;
+    closed++; a.correct ? right++ : wrong++;
+  }
+  P.score = { right, wrong }; P.total = (L.exercises || []).length;
+  P.done = closed === P.total && P.total > 0; P.updatedAt = new Date().toISOString();
+}
+function baseProgress(date){ return clone(state.progress[date]) || { date, answers: {}, total: 0, done: false, score: { right: 0, wrong: 0 } }; }
+async function recordAnswer(date, e, given, correct, extra){
+  const L = lessonBy(date); if (!L || state.readOnly) return;
+  const P = baseProgress(date);
+  P.answers[e.id] = Object.assign({ given: String(given).slice(0, 600), correct: !!correct, wordKey: e.wordKey || null, skill: e.skill || null, at: new Date().toISOString() }, extra || {});
+  finalize(P, L); state.progress[date] = P; render(); await saveProgress(date);
+}
+function exBy(date, id){ const L = lessonBy(date); return L && (L.exercises || []).find(e => e.id === id); }
+
+async function gradeWrite(date, e){
+  const id = `in-${date}-${e.id}`; const given = (state.drafts[id] || "").trim();
+  if (!given){ toast("Schreib zuerst einen Satz."); return; }
+  state.pending[e.id] = true; render();
+  try {
+    const res = await state.sample.json(
+`Du bist Deutschlehrer für spanischsprachige Lernende auf Niveau A2 (Ziel B1). Bewerte die Antwort.
+Aufgabe: ${e.prompt}
+Beispiellösung: ${e.model || "(keine)"}
+Antwort des Lernenden: ${given}
+
+Antworte nur mit JSON in dieser Form:
+{"correct": true, "corrected": "die Antwort mit allen Fehlern korrigiert", "feedback": "1 bis 2 kurze Sätze in sehr einfachem Deutsch (A2), danach eine kurze Erklärung auf Spanisch"}
+"correct" ist true, wenn die Antwort die Aufgabe erfüllt und höchstens einen kleinen Rechtschreibfehler hat. Grammatikfehler bedeuten false.`,
+      { modelTier: "default", cache: false });
+    delete state.pending[e.id];
+    await recordAnswer(date, e, given, !!(res && res.correct), { corrected: strn(res && res.corrected), feedback: strn(res && res.feedback) });
+  } catch (err){
+    delete state.pending[e.id];
+    if (err && (err.code === "not_granted" || err.code === "sampling_disabled")){ state.sample = null; toast("Claude darf hier nicht prüfen. Nutze die Beispiellösung."); }
+    else if (err && err.code === "rate_limited") toast("Gerade zu viele Anfragen. Versuch es in ein paar Minuten noch einmal.");
+    else if (err && err.code !== "cancelled") toast("Die Prüfung hat nicht geklappt. Versuch es noch einmal.");
+    render();
+  }
+}
+
+/* lesson generation (fallback when the evening task has not run) */
+function planInputs(){
+  const st = computeStats();
+  const plan = state.plan || {};
+  const weak = Object.entries(st.perWord).filter(([k, s]) => s.last === false && state.words[k])
+    .sort((a, b) => a[1].lastDate.localeCompare(b[1].lastDate)).map(([k]) => k);
+  const planned = (plan.reviewWords || []).filter(k => state.words[k] && st.status(k) !== "gelernt");
+  const review = [...new Set(weak.slice(0, 2).concat(planned))].slice(0, 3).map(k => state.words[k]);
+  const lastUsed = {}; state.lessons.forEach(l => { if (l.grammar && l.grammar.topic && !lastUsed[l.grammar.topic]) lastUsed[l.grammar.topic] = l.date; });
+  let topics = TOPICS.filter(t => !lastUsed[t]);
+  if (!topics.length) topics = [...TOPICS].sort((a, b) => lastUsed[a].localeCompare(lastUsed[b]));
+  const focus = (plan.focusTopics || []).filter(t => TOPICS.includes(t) && lastUsed[t] !== TODAY && !(state.lessons[0] && state.lessons[0].grammar && state.lessons[0].grammar.topic === t));
+  topics = [...new Set(focus.concat(topics))];
+  const secUsed = {}; state.lessons.forEach(l => { if (l.sector && !secUsed[l.sector]) secUsed[l.sector] = l.date; });
+  const sector = [...SECTORS].sort((a, b) => (secUsed[a] || "").localeCompare(secUsed[b] || ""))[0];
+  return { review, topics: topics.slice(0, 5), sector };
+}
+function buildPrompt(){
+  const { review, topics, sector } = planInputs();
+  const known = Object.values(state.words).map(w => w.de).slice(-500).join(", ");
+  return `Erstelle eine tägliche Deutsch-Lektion (5–10 Minuten) für einen spanischsprachigen Lernenden auf Niveau A2 mit Ziel B1.
+
+Bereich heute: ${sector}
+Grammatikthema: wähle genau eins aus dieser Liste und übernimm den Text exakt in "topic": ${topics.map(t => `"${t}"`).join(", ")}
+Diese Wörter kennt er schon, nimm sie NICHT als neue Wörter: ${known || "(noch keine)"}
+Wiederholungswörter (je eine Übung mit "skill": "wiederholung" und "word" exakt wie hier): ${review.length ? review.map(w => `"${w.de}"`).join(", ") : "(keine)"}
+${state.plan ? `Wochenplan: Schwierigkeit ${state.plan.difficulty || "gleich"}. ${state.plan.notesForLessons || ""}` : ""}
+
+Regeln:
+- Genau 6 neue Wörter aus dem Bereich: 2 Verben, 2 Nomen, 2 Adjektive, häufig und nützlich, auf Niveau A2/B1.
+- Erklärungen ("meaning", "hint", "feedback") in sehr einfachem Deutsch (A2), kurze Sätze. "es" ist die spanische Übersetzung.
+- "explanation": 3–5 sehr kurze Sätze in einfachem Deutsch, getrennt durch \\n, danach eine letzte Zeile, die mit "ES: " beginnt und die Regel in einem Satz auf Spanisch zusammenfasst.
+- "de" bei Nomen ohne Artikel; Artikel in "article" (der/die/das), Plural in "plural" mit Artikel.
+- Bei Verben in "forms": 3. Person Präsens, Präteritum, Perfekt (z. B. "kauft ein, kaufte ein, hat eingekauft"). Bei Adjektiven: Komparativ und Superlativ.
+- Übungen in dieser Reihenfolge: 6 Wortschatz-Übungen (eine pro neuem Wort, "skill": "wort", "word" = das Wort exakt wie in "de"), dann die Wiederholungsübungen, dann 2 Grammatik-Übungen ("skill": "grammatik", "word": null), dann 1 Schreibaufgabe ("kind": "write", "skill": "schreiben": 1–2 kurze Sätze mit einem neuen Wort und der Grammatik, mit "model" als Beispiellösung).
+- "choice": 3–4 Optionen, "answer" ist exakt eine der Optionen. "gap": ein Satz mit ___ als Lücke, "answer" ist das fehlende Wort oder die fehlenden Wörter, "accept" enthält weitere korrekte Varianten.
+- Prüfe jede Lösung sorgfältig. Jede Übung muss genau eine eindeutig richtige Antwort haben.
+
+Antworte nur mit JSON in genau dieser Form:
+{"sector":"${sector}","theme":"kurzes Thema auf Deutsch","words":[{"de":"einkaufen","type":"verb","article":null,"plural":null,"forms":"kauft ein, kaufte ein, hat eingekauft","meaning":"Sachen im Geschäft kaufen","es":"hacer la compra","example":"Ich kaufe am Samstag ein."},{"de":"Rechnung","type":"noun","article":"die","plural":"die Rechnungen","forms":null,"meaning":"…","es":"…","example":"…"}],"grammar":{"topic":"…","title":"kurzer Titel","explanation":"3–5 kurze Sätze in einfachem Deutsch\\nES: …","examples":["…","…","…"]},"exercises":[{"kind":"gap","skill":"wort","word":"einkaufen","prompt":"Wir ___ am Samstag ___.","options":null,"answer":"kaufen ein","accept":[],"hint":"trennbares Verb, wir-Form","model":null},{"kind":"choice","skill":"grammatik","word":null,"prompt":"…","options":["…","…","…"],"answer":"…","accept":[],"hint":null,"model":null}]}`;
+}
+function normalizeLesson(raw, date, source){
+  if (!raw || typeof raw !== "object") return null;
+  const words = (Array.isArray(raw.words) ? raw.words : []).filter(w => w && w.de && TYPE_LABEL[w.type]).slice(0, 8).map(w => ({
+    key: keyOf(w.de), de: str(w.de).replace(/^(der|die|das)\s+/i, ""), type: w.type,
+    article: w.type === "noun" && ["der","die","das"].includes(w.article) ? w.article : null,
+    plural: strn(w.plural), forms: strn(w.forms), meaning: str(w.meaning), es: str(w.es), example: str(w.example)
+  }));
+  if (words.length < 3) return null;
+  const keys = new Set(words.map(w => w.key));
+  const exs = (Array.isArray(raw.exercises) ? raw.exercises : []).map(e => {
+    if (!e || !e.prompt || !["choice","gap","write"].includes(e.kind)) return null;
+    const wk = e.word ? keyOf(e.word) : null;
+    const o = { kind: e.kind, skill: SKILL_LABEL[e.skill] ? e.skill : "wort", prompt: str(e.prompt), hint: strn(e.hint),
+      wordKey: wk && (keys.has(wk) || state.words[wk]) ? wk : null };
+    if (e.kind === "choice"){
+      o.options = (Array.isArray(e.options) ? e.options : []).map(str).filter(Boolean).slice(0, 6);
+      o.answer = str(e.answer);
+      if (o.options.length < 2 || !o.options.some(x => norm(x) === norm(o.answer))) return null;
+    } else if (e.kind === "gap"){
+      o.answer = str(e.answer); o.accept = (Array.isArray(e.accept) ? e.accept : []).map(str).filter(Boolean).slice(0, 8);
+      if (!o.answer) return null;
+    } else { o.model = str(e.model); }
+    return o;
+  }).filter(Boolean).map((o, i) => Object.assign({ id: "e" + (i + 1) }, o));
+  if (exs.length < 3) return null;
+  const g = raw.grammar || {};
+  return { date, sector: SECTORS.includes(raw.sector) ? raw.sector : SECTORS[0], theme: str(raw.theme) || "Lektion",
+    words, grammar: { topic: str(g.topic), title: str(g.title), explanation: String(g.explanation || "").slice(0, 2000), examples: (Array.isArray(g.examples) ? g.examples : []).map(str).slice(0, 6) },
+    exercises: exs, createdAt: new Date().toISOString(), source };
+}
+async function generateLesson(){
+  if (state.gen && state.gen.msg) return;
+  state.gen = { msg: "Claude schreibt deine Lektion … das dauert meist 20 bis 60 Sekunden." }; render();
+  try {
+    const existing = await state.db.doc("lessons/" + TODAY).get();
+    if (existing.exists){ state.gen = null; state.selDate = TODAY; render(); return; }
+    const raw = await state.sample.json(buildPrompt(), { modelTier: "default", cache: false });
+    const L = normalizeLesson(raw, TODAY, "seite");
+    if (!L) throw { code: "shape" };
+    await state.db.doc("lessons/" + TODAY).set(L);
+    for (const w of L.words){
+      if (!state.words[w.key]) await state.db.doc("words/" + w.key).set(Object.assign({}, w, { sector: L.sector, firstDate: TODAY }));
+    }
+    state.gen = null; state.selDate = TODAY;
+  } catch (e){
+    const c = e && e.code;
+    const msg = c === "not_granted" || c === "sampling_disabled" ? "Claude darf hier keine Lektion erstellen."
+      : c === "rate_limited" ? "Gerade zu viele Anfragen. Versuch es in ein paar Minuten."
+      : c === "invalid_json" || c === "shape" ? "Die Lektion war unvollständig. Bitte noch einmal versuchen."
+      : c === "invalid_argument" ? "Du darfst auf dieser Seite nichts speichern."
+      : "Das hat nicht geklappt. Bitte noch einmal versuchen.";
+    state.gen = { err: msg };
+  }
+  render();
+}
+
+/* export */
+async function exportXlsx(){
+  if (!state.downloads) return;
+  const st = computeStats();
+  const label = { neu: "Neu", uebt: "Übt noch", gelernt: "Gelernt" };
+  const wordsRows = Object.values(state.words).sort((a, b) => (a.firstDate || "").localeCompare(b.firstDate || "")).map(w => {
+    const s = st.perWord[w.key] || { right: 0, wrong: 0 };
+    return { "Wort": w.de, "Artikel": w.article || "", "Plural": w.plural || "", "Formen": w.forms || "", "Wortart": TYPE_LABEL[w.type] || "", "Bereich": w.sector || "",
+      "Bedeutung": w.meaning || "", "Spanisch": w.es || "", "Beispiel": w.example || "", "Erstmals": w.firstDate || "", "Richtig": s.right, "Falsch": s.wrong, "Status": label[st.status(w.key)] };
+  });
+  const dayRows = Object.values(state.progress).sort((a, b) => a.date.localeCompare(b.date)).map(p => {
+    const L = lessonBy(p.date) || {}; const r = (p.score && p.score.right) || 0, w = (p.score && p.score.wrong) || 0;
+    return { "Datum": p.date, "Bereich": L.sector || "", "Thema": L.theme || "", "Grammatik": (L.grammar && L.grammar.topic) || "", "Aufgaben": p.total || 0, "Richtig": r, "Falsch": w,
+      "Fehlerquote": r + w ? Math.round(w / (r + w) * 1000) / 10 : "", "Erledigt": p.done ? "ja" : "nein" };
+  });
+  try {
+    if (window.XLSX){
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(wordsRows), "Wörter");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayRows), "Lektionen");
+      const buf = XLSX.write(wb, { type: "array", bookType: "xlsx" });
+      await state.downloads.save({ filename: `deutsch-am-abend-${TODAY}.xlsx`, data: new Blob([buf]) });
+    } else {
+      const cols = wordsRows.length ? Object.keys(wordsRows[0]) : ["Wort"];
+      const csv = [cols.join(";")].concat(wordsRows.map(r => cols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(";"))).join("\n");
+      await state.downloads.save({ filename: `deutsch-am-abend-${TODAY}.csv`, data: "﻿" + csv });
+    }
+  } catch (e){
+    if (e && e.code === "declined") return;
+    toast("Der Export hat nicht geklappt.");
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", ev => {
+  const tab = ev.target.closest("[data-tab]");
+  if (tab){
+    state.tab = tab.dataset.tab;
+    document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t === tab)));
+    ["heute","fortschritt","woerter"].forEach(n => $("#view-" + n).hidden = n !== state.tab);
+    render(); return;
+  }
+  const b = ev.target.closest("[data-action]"); if (!b || b.tagName === "FORM") return;
+  const act = b.dataset.action, date = b.dataset.date, e = date && exBy(date, b.dataset.ex);
+  if (act === "generate") generateLesson();
+  else if (act === "goto"){ state.selDate = date; render(); }
+  else if (act === "export") exportXlsx();
+  else if (act === "choose" && e){ const opt = e.options[Number(b.dataset.i)]; recordAnswer(date, e, opt, norm(opt) === norm(e.answer)); }
+  else if (act === "grade" && e) gradeWrite(date, e);
+  else if (act === "reveal" && e){
+    const id = `in-${date}-${e.id}`;
+    if (!(state.drafts[id] || "").trim()){ toast("Schreib zuerst deinen eigenen Satz."); return; }
+    state.reveal[date + e.id] = true; render();
+  }
+  else if (act === "self" && e){ const id = `in-${date}-${e.id}`; recordAnswer(date, e, (state.drafts[id] || "").trim(), b.dataset.ok === "1", { feedback: "Selbst bewertet." }); }
+  else if (act === "flag" && e){
+    const L = lessonBy(date); if (!L || state.readOnly) return;
+    const P = baseProgress(date); const cur = P.answers[e.id];
+    if (cur && cur.flagged){ if (cur.correct == null) delete P.answers[e.id]; else cur.flagged = false; }
+    else P.answers[e.id] = Object.assign(cur || { given: null, correct: null, wordKey: e.wordKey || null, skill: e.skill || null }, { flagged: true });
+    finalize(P, L); state.progress[date] = P; render(); saveProgress(date);
+  }
+});
+document.addEventListener("submit", ev => {
+  const f = ev.target.closest("form[data-action='check']"); if (!f) return;
+  ev.preventDefault();
+  const date = f.dataset.date, e = exBy(date, f.dataset.ex); if (!e) return;
+  const given = f.querySelector("input").value.trim(); if (!given) return;
+  const ok = [e.answer].concat(e.accept || []).some(x => norm(x) === norm(given));
+  recordAnswer(date, e, given, ok);
+});
+document.addEventListener("input", ev => {
+  const t = ev.target;
+  if (t.dataset && t.dataset.draft) state.drafts[t.dataset.draft] = t.value;
+  if (t.id === "fq"){ state.filter.q = t.value; renderTable(); }
+});
+document.addEventListener("change", ev => {
+  const t = ev.target;
+  if (t.id === "daysel"){ state.selDate = t.value; render(); }
+  if (t.id === "ft"){ state.filter.type = t.value; renderTable(); }
+  if (t.id === "fs"){ state.filter.sector = t.value; renderTable(); }
+});
+/* tooltip */
+const tip = $("#tip");
+function showTip(el, x, y){ tip.textContent = el.dataset.tip; tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, x - w / 2)) + "px";
+  tip.style.top = Math.max(8, y - h - 12) + "px"; }
+document.addEventListener("pointermove", ev => { const el = ev.target.closest && ev.target.closest("[data-tip]"); if (el) showTip(el, ev.clientX, ev.clientY); else tip.hidden = true; });
+document.addEventListener("focusin", ev => { const el = ev.target.closest && ev.target.closest("[data-tip]"); if (el){ const r = el.getBoundingClientRect(); showTip(el, r.left + r.width / 2, r.top); } });
+document.addEventListener("focusout", () => { tip.hidden = true; });
+
+/* ---------- boot ---------- */
+render();
+(async () => {
+  if (!window.claude || !window.claude.use){ state.dbStatus = "none"; render(); return; }
+  const [db, sample, downloads, user] = await Promise.all(["db","sample","downloads","user"].map(n => window.claude.use(n).catch(() => null)));
+  state.sample = sample; state.downloads = downloads;
+  if (!db){ state.dbStatus = "none"; render(); return; }
+  state.db = db; state.dbStatus = "ok";
+  if (user){ try { if ((await user.can("data.write")) === false) state.readOnly = true; } catch(e) {} }
+  const onErr = e => { if (e && e.code === "revoked"){ state.dbStatus = "none"; } else toast("Verbindung zu den Daten unterbrochen. Lade die Seite neu."); render(); };
+  db.collection("lessons").orderBy("date", "desc").limit(400).onSnapshot(s => { state.lessons = s.docs.map(d => d.data()).filter(l => l && l.date); state.ready.lessons = true; render(); }, onErr);
+  db.collection("progress").limit(1000).onSnapshot(s => { const p = {}; s.docs.forEach(d => { const v = d.data(); if (v && v.date) p[v.date] = v; }); state.progress = p; state.ready.progress = true; render(); }, onErr);
+  db.collection("words").limit(1000).onSnapshot(s => { const w = {}; s.docs.forEach(d => { const v = d.data(); if (v && v.de){ v.key = v.key || d.id; w[v.key] = v; } }); state.words = w; state.ready.words = true; render(); }, onErr);
+  db.doc("plans/current").onSnapshot(s => { state.plan = s.exists ? s.data() : null; render(); }, onErr);
+  render();
+})();
+</script>
+
+</body></html>

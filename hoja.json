@@ -1,0 +1,858 @@
+{
+ "nota": "Paso 1: una llamada batchUpdate (update_spreadsheet) con 'requests'. Paso 2: escribir cada elemento de 'values' con update_values (USER_ENTERED), sustituyendo {{HOY}} por la fecha de hoy YYYY-MM-DD.",
+ "requests": [
+  {
+   "updateSpreadsheetProperties": {
+    "properties": {
+     "title": "Deutsch am Abend",
+     "locale": "en_GB",
+     "timeZone": "Europe/Berlin"
+    },
+    "fields": "title,locale,timeZone"
+   }
+  },
+  {
+   "updateSheetProperties": {
+    "properties": {
+     "sheetId": 0,
+     "title": "Dashboard",
+     "gridProperties": {
+      "hideGridlines": true
+     }
+    },
+    "fields": "title,gridProperties.hideGridlines"
+   }
+  },
+  {
+   "addSheet": {
+    "properties": {
+     "sheetId": 1,
+     "title": "Pro Tag",
+     "index": 1,
+     "gridProperties": {
+      "frozenRowCount": 1
+     }
+    }
+   }
+  },
+  {
+   "addSheet": {
+    "properties": {
+     "sheetId": 2,
+     "title": "Wörter",
+     "index": 2,
+     "gridProperties": {
+      "frozenRowCount": 1
+     }
+    }
+   }
+  },
+  {
+   "addSheet": {
+    "properties": {
+     "sheetId": 3,
+     "title": "Lektionen",
+     "index": 3,
+     "gridProperties": {
+      "frozenRowCount": 1
+     }
+    }
+   }
+  },
+  {
+   "addSheet": {
+    "properties": {
+     "sheetId": 4,
+     "title": "Gruppen",
+     "index": 4
+    }
+   }
+  },
+  {
+   "addSheet": {
+    "properties": {
+     "sheetId": 5,
+     "title": "Wochenplan",
+     "index": 5
+    }
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 1,
+     "startRowIndex": 0,
+     "endRowIndex": 1
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "textFormat": {
+       "bold": true
+      }
+     }
+    },
+    "fields": "userEnteredFormat.textFormat.bold"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 2,
+     "startRowIndex": 0,
+     "endRowIndex": 1
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "textFormat": {
+       "bold": true
+      }
+     }
+    },
+    "fields": "userEnteredFormat.textFormat.bold"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 3,
+     "startRowIndex": 0,
+     "endRowIndex": 1
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "textFormat": {
+       "bold": true
+      }
+     }
+    },
+    "fields": "userEnteredFormat.textFormat.bold"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 1,
+     "startRowIndex": 1,
+     "startColumnIndex": 0,
+     "endColumnIndex": 1
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "DATE",
+       "pattern": "yyyy-mm-dd"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 1,
+     "startRowIndex": 1,
+     "startColumnIndex": 4,
+     "endColumnIndex": 5
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "PERCENT",
+       "pattern": "0%"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 3,
+     "startRowIndex": 1,
+     "startColumnIndex": 0,
+     "endColumnIndex": 1
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "DATE",
+       "pattern": "yyyy-mm-dd"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 3,
+     "startRowIndex": 1,
+     "startColumnIndex": 8,
+     "endColumnIndex": 9
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "PERCENT",
+       "pattern": "0%"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 5,
+     "startRowIndex": 0,
+     "startColumnIndex": 1,
+     "endColumnIndex": 2,
+     "endRowIndex": 2
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "DATE",
+       "pattern": "yyyy-mm-dd"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 0,
+     "startRowIndex": 2,
+     "startColumnIndex": 2,
+     "endColumnIndex": 3,
+     "endRowIndex": 3
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "DATE",
+       "pattern": "yyyy-mm-dd"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 0,
+     "startRowIndex": 5,
+     "startColumnIndex": 5,
+     "endColumnIndex": 6,
+     "endRowIndex": 6
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "PERCENT",
+       "pattern": "0%"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 0,
+     "startRowIndex": 5,
+     "startColumnIndex": 7,
+     "endColumnIndex": 8,
+     "endRowIndex": 6
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "numberFormat": {
+       "type": "PERCENT",
+       "pattern": "0%"
+      }
+     }
+    },
+    "fields": "userEnteredFormat.numberFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 0,
+     "startRowIndex": 1,
+     "endRowIndex": 2,
+     "startColumnIndex": 1,
+     "endColumnIndex": 2
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "textFormat": {
+       "bold": true,
+       "fontSize": 20
+      }
+     }
+    },
+    "fields": "userEnteredFormat.textFormat"
+   }
+  },
+  {
+   "repeatCell": {
+    "range": {
+     "sheetId": 0,
+     "startRowIndex": 5,
+     "endRowIndex": 6,
+     "startColumnIndex": 1,
+     "endColumnIndex": 13
+    },
+    "cell": {
+     "userEnteredFormat": {
+      "textFormat": {
+       "bold": true,
+       "fontSize": 16
+      }
+     }
+    },
+    "fields": "userEnteredFormat.textFormat"
+   }
+  },
+  {
+   "addChart": {
+    "chart": {
+     "spec": {
+      "title": "Fehlerquote pro Tag",
+      "basicChart": {
+       "chartType": "LINE",
+       "legendPosition": "NO_LEGEND",
+       "headerCount": 1,
+       "axis": [
+        {
+         "position": "BOTTOM_AXIS",
+         "title": "Datum"
+        },
+        {
+         "position": "LEFT_AXIS",
+         "title": "Fehler",
+         "viewWindowOptions": {
+          "viewWindowMin": 0,
+          "viewWindowMax": 1
+         }
+        }
+       ],
+       "domains": [
+        {
+         "domain": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 1,
+             "startRowIndex": 0,
+             "endRowIndex": 1000,
+             "startColumnIndex": 0,
+             "endColumnIndex": 1
+            }
+           ]
+          }
+         }
+        }
+       ],
+       "series": [
+        {
+         "series": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 1,
+             "startRowIndex": 0,
+             "endRowIndex": 1000,
+             "startColumnIndex": 4,
+             "endColumnIndex": 5
+            }
+           ]
+          }
+         },
+         "targetAxis": "LEFT_AXIS",
+         "colorStyle": {
+          "rgbColor": {
+           "red": 0.23921569,
+           "green": 0.37254903,
+           "blue": 0.5372549
+          }
+         }
+        }
+       ]
+      },
+      "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS"
+     },
+     "position": {
+      "overlayPosition": {
+       "anchorCell": {
+        "sheetId": 0,
+        "rowIndex": 23,
+        "columnIndex": 1
+       },
+       "widthPixels": 760,
+       "heightPixels": 300
+      }
+     }
+    }
+   }
+  },
+  {
+   "addChart": {
+    "chart": {
+     "spec": {
+      "title": "Wörter nach Wortart",
+      "basicChart": {
+       "chartType": "BAR",
+       "legendPosition": "BOTTOM_LEGEND",
+       "headerCount": 1,
+       "axis": [
+        {
+         "position": "BOTTOM_AXIS"
+        },
+        {
+         "position": "LEFT_AXIS"
+        }
+       ],
+       "domains": [
+        {
+         "domain": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 4,
+             "startRowIndex": 0,
+             "endRowIndex": 4,
+             "startColumnIndex": 0,
+             "endColumnIndex": 1
+            }
+           ]
+          }
+         }
+        }
+       ],
+       "series": [
+        {
+         "series": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 4,
+             "startRowIndex": 0,
+             "endRowIndex": 4,
+             "startColumnIndex": 1,
+             "endColumnIndex": 2
+            }
+           ]
+          }
+         },
+         "targetAxis": "BOTTOM_AXIS",
+         "colorStyle": {
+          "rgbColor": {
+           "red": 0.78431374,
+           "green": 0.8235294,
+           "blue": 0.8745098
+          }
+         }
+        },
+        {
+         "series": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 4,
+             "startRowIndex": 0,
+             "endRowIndex": 4,
+             "startColumnIndex": 2,
+             "endColumnIndex": 3
+            }
+           ]
+          }
+         },
+         "targetAxis": "BOTTOM_AXIS",
+         "colorStyle": {
+          "rgbColor": {
+           "red": 0.23921569,
+           "green": 0.37254903,
+           "blue": 0.5372549
+          }
+         }
+        }
+       ]
+      },
+      "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS"
+     },
+     "position": {
+      "overlayPosition": {
+       "anchorCell": {
+        "sheetId": 0,
+        "rowIndex": 43,
+        "columnIndex": 1
+       },
+       "widthPixels": 540,
+       "heightPixels": 300
+      }
+     }
+    }
+   }
+  },
+  {
+   "addChart": {
+    "chart": {
+     "spec": {
+      "title": "Wörter nach Bereich",
+      "basicChart": {
+       "chartType": "BAR",
+       "legendPosition": "BOTTOM_LEGEND",
+       "headerCount": 1,
+       "axis": [
+        {
+         "position": "BOTTOM_AXIS"
+        },
+        {
+         "position": "LEFT_AXIS"
+        }
+       ],
+       "domains": [
+        {
+         "domain": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 4,
+             "startRowIndex": 5,
+             "endRowIndex": 9,
+             "startColumnIndex": 0,
+             "endColumnIndex": 1
+            }
+           ]
+          }
+         }
+        }
+       ],
+       "series": [
+        {
+         "series": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 4,
+             "startRowIndex": 5,
+             "endRowIndex": 9,
+             "startColumnIndex": 1,
+             "endColumnIndex": 2
+            }
+           ]
+          }
+         },
+         "targetAxis": "BOTTOM_AXIS",
+         "colorStyle": {
+          "rgbColor": {
+           "red": 0.78431374,
+           "green": 0.8235294,
+           "blue": 0.8745098
+          }
+         }
+        },
+        {
+         "series": {
+          "sourceRange": {
+           "sources": [
+            {
+             "sheetId": 4,
+             "startRowIndex": 5,
+             "endRowIndex": 9,
+             "startColumnIndex": 2,
+             "endColumnIndex": 3
+            }
+           ]
+          }
+         },
+         "targetAxis": "BOTTOM_AXIS",
+         "colorStyle": {
+          "rgbColor": {
+           "red": 0.23921569,
+           "green": 0.37254903,
+           "blue": 0.5372549
+          }
+         }
+        }
+       ]
+      },
+      "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS"
+     },
+     "position": {
+      "overlayPosition": {
+       "anchorCell": {
+        "sheetId": 0,
+        "rowIndex": 43,
+        "columnIndex": 7
+       },
+       "widthPixels": 540,
+       "heightPixels": 300
+      }
+     }
+    }
+   }
+  }
+ ],
+ "values": [
+  {
+   "range": "Dashboard!B2:C3",
+   "values": [
+    [
+     "Deutsch am Abend",
+     ""
+    ],
+    [
+     "Stand",
+     "=Wochenplan!B1"
+    ]
+   ]
+  },
+  {
+   "range": "Dashboard!B5:M6",
+   "values": [
+    [
+     "Wörter gesehen",
+     "",
+     "Gelernt",
+     "",
+     "Fehlerquote 7 Tage",
+     "",
+     "Fehlerquote gesamt",
+     "",
+     "Lektionen (7 Tage)",
+     "",
+     "Serie",
+     ""
+    ],
+    [
+     "=COUNTA('Wörter'!A2:A)",
+     "",
+     "=COUNTIF('Wörter'!M2:M,\"Gelernt\")",
+     "",
+     "=LET(s,Wochenplan!$B$1-6,r,SUMIFS('Pro Tag'!B2:B,'Pro Tag'!A2:A,\">=\"&s),f,SUMIFS('Pro Tag'!C2:C,'Pro Tag'!A2:A,\">=\"&s),IF(r+f=0,\"–\",f/(r+f)))",
+     "",
+     "=LET(r,SUM('Pro Tag'!B2:B),f,SUM('Pro Tag'!C2:C),IF(r+f=0,\"–\",f/(r+f)))",
+     "",
+     "=LET(s,Wochenplan!$B$1-6,COUNTIFS(Lektionen!A2:A,\">=\"&s,Lektionen!H2:H,\"ja\")&\" / \"&COUNTIFS(Lektionen!A2:A,\">=\"&s))",
+     "",
+     "=Wochenplan!B4&\" Tage\"",
+     ""
+    ]
+   ]
+  },
+  {
+   "range": "Dashboard!B8:B12",
+   "values": [
+    [
+     "Plan für die nächste Woche"
+    ],
+    [
+     "=Wochenplan!B5"
+    ],
+    [
+     "=\"Schwierigkeit: \"&Wochenplan!B3&IF(Wochenplan!B6=\"\",\"\",\" · Grammatik im Fokus: \"&Wochenplan!B6)"
+    ],
+    [
+     "Schwachpunkte"
+    ],
+    [
+     "=IFERROR(ARRAYFORMULA(\"• \"&FILTER(Wochenplan!B8:B12,Wochenplan!B8:B12<>\"\")),\"Keine\")"
+    ]
+   ]
+  },
+  {
+   "range": "Dashboard!B17:B18",
+   "values": [
+    [
+     "Stärken"
+    ],
+    [
+     "=IFERROR(ARRAYFORMULA(\"• \"&FILTER(Wochenplan!B13:B17,Wochenplan!B13:B17<>\"\")),\"Noch keine\")"
+    ]
+   ]
+  },
+  {
+   "range": "'Pro Tag'!A1:E1",
+   "values": [
+    [
+     "Datum",
+     "Richtig",
+     "Falsch",
+     "Erledigt",
+     "={\"Fehlerquote\";ARRAYFORMULA(IF(LEN(A2:A),IF(B2:B+C2:C=0,0,C2:C/(B2:B+C2:C)),))}"
+    ]
+   ]
+  },
+  {
+   "range": "'Wörter'!A1:M1",
+   "values": [
+    [
+     "Wort",
+     "Artikel",
+     "Plural",
+     "Formen",
+     "Wortart",
+     "Bereich",
+     "Bedeutung",
+     "Spanisch",
+     "Beispiel",
+     "Erstmals",
+     "Richtig",
+     "Falsch",
+     "Status"
+    ]
+   ]
+  },
+  {
+   "range": "Lektionen!A1:I1",
+   "values": [
+    [
+     "Datum",
+     "Bereich",
+     "Thema",
+     "Grammatik",
+     "Aufgaben",
+     "Richtig",
+     "Falsch",
+     "Erledigt",
+     "={\"Fehlerquote\";ARRAYFORMULA(IF(LEN(A2:A),IF(F2:F+G2:G=0,,G2:G/(F2:F+G2:G)),))}"
+    ]
+   ]
+  },
+  {
+   "range": "Gruppen!A1:C9",
+   "values": [
+    [
+     "Wortart",
+     "Gesehen",
+     "Gelernt"
+    ],
+    [
+     "Verb",
+     "=COUNTIF('Wörter'!$E$2:$E,$A2)",
+     "=COUNTIFS('Wörter'!$E$2:$E,$A2,'Wörter'!$M$2:$M,\"Gelernt\")"
+    ],
+    [
+     "Nomen",
+     "=COUNTIF('Wörter'!$E$2:$E,$A3)",
+     "=COUNTIFS('Wörter'!$E$2:$E,$A3,'Wörter'!$M$2:$M,\"Gelernt\")"
+    ],
+    [
+     "Adjektiv",
+     "=COUNTIF('Wörter'!$E$2:$E,$A4)",
+     "=COUNTIFS('Wörter'!$E$2:$E,$A4,'Wörter'!$M$2:$M,\"Gelernt\")"
+    ],
+    [
+     "",
+     "",
+     ""
+    ],
+    [
+     "Bereich",
+     "Gesehen",
+     "Gelernt"
+    ],
+    [
+     "Alltag",
+     "=COUNTIF('Wörter'!$F$2:$F,$A7)",
+     "=COUNTIFS('Wörter'!$F$2:$F,$A7,'Wörter'!$M$2:$M,\"Gelernt\")"
+    ],
+    [
+     "IT & Technik",
+     "=COUNTIF('Wörter'!$F$2:$F,$A8)",
+     "=COUNTIFS('Wörter'!$F$2:$F,$A8,'Wörter'!$M$2:$M,\"Gelernt\")"
+    ],
+    [
+     "Business & Büro",
+     "=COUNTIF('Wörter'!$F$2:$F,$A9)",
+     "=COUNTIFS('Wörter'!$F$2:$F,$A9,'Wörter'!$M$2:$M,\"Gelernt\")"
+    ]
+   ]
+  },
+  {
+   "range": "Wochenplan!A1:B17",
+   "values": [
+    [
+     "Stand",
+     "{{HOY}}"
+    ],
+    [
+     "Woche ab",
+     ""
+    ],
+    [
+     "Schwierigkeit",
+     "gleich"
+    ],
+    [
+     "Serie (Tage)",
+     0
+    ],
+    [
+     "Zusammenfassung",
+     "Noch kein Plan vorhanden."
+    ],
+    [
+     "Grammatik im Fokus",
+     ""
+    ],
+    [
+     "",
+     ""
+    ],
+    [
+     "Schwachpunkt 1",
+     ""
+    ],
+    [
+     "Schwachpunkt 2",
+     ""
+    ],
+    [
+     "Schwachpunkt 3",
+     ""
+    ],
+    [
+     "Schwachpunkt 4",
+     ""
+    ],
+    [
+     "Schwachpunkt 5",
+     ""
+    ],
+    [
+     "Stärke 1",
+     ""
+    ],
+    [
+     "Stärke 2",
+     ""
+    ],
+    [
+     "Stärke 3",
+     ""
+    ],
+    [
+     "Stärke 4",
+     ""
+    ],
+    [
+     "Stärke 5",
+     ""
+    ]
+   ]
+  }
+ ]
+}
